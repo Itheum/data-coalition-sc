@@ -2,10 +2,11 @@
 
 multiversx_sc::imports!();
 
+pub mod aggregate;
 pub mod dao;
 
 #[multiversx_sc::contract]
-pub trait DataCoalition: dao::DaoModule {
+pub trait DataCoalition: dao::DaoModule + aggregate::AggregateModule {
     #[init]
     fn init(&self) {}
 
