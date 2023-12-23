@@ -27,6 +27,19 @@ pub trait DataCoalition: config::ConfigModule + dao::DaoModule + aggregate::Aggr
         self.coalitions().insert(dao, app_id);
     }
 
+    #[payable("*")]
+    #[endpoint(grantAccess)]
+    fn grant_access_endpoint(&self, dao: ManagedAddress, category: ManagedBuffer) {
+        self.require_category_exists(&dao, &category);
+
+        // TODO: implement
+    }
+
+    #[endpoint(revokeAccess)]
+    fn revoke_access_endpoint(&self, dao: ManagedAddress) {
+        // TODO: implement
+    }
+
     #[storage_mapper("coalitions")]
     fn coalitions(&self) -> MapMapper<ManagedAddress, AggregatorAppId>;
 }
