@@ -1,5 +1,7 @@
 #![no_std]
 
+use aggregate::AggregatorAppId;
+
 multiversx_sc::imports!();
 
 pub mod aggregate;
@@ -11,7 +13,17 @@ pub trait DataCoalition: dao::DaoModule + aggregate::AggregateModule {
     fn init(&self) {}
 
     #[upgrade]
-    fn upgrade(&self) {
-        self.init();
+    fn upgrade(&self) {}
+
+    #[payable("*")]
+    #[endpoint(create)]
+    fn create_endpoint(&self) {
+        let dao = self.create_dao();
+        let app_id = self.register_aggregator_app(&dao);
+
+        self.coalitions().insert(dao, app_id);
     }
+
+    #[storage_mapper("coalitions")]
+    fn coalitions(&self) -> MapMapper<ManagedAddress, AggregatorAppId>;
 }
