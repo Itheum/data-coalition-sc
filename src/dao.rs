@@ -25,7 +25,7 @@ pub trait DaoModule: config::ConfigModule {
         members_multi.into()
     }
 
-    fn create_dao(&self) -> ManagedAddress {
+    fn create_dao(&self, payment: EsdtTokenPayment) -> ManagedAddress {
         require!(!self.dao_manager().is_empty(), "dao manager not set");
         let dao_manager = self.dao_manager().get();
         let features = MultiValueManagedVec::new();
@@ -33,6 +33,7 @@ pub trait DaoModule: config::ConfigModule {
         let dao: ManagedAddress = self
             .dao_manager_contract(dao_manager)
             .create_entity_endpoint(features)
+            .with_esdt_transfer(payment)
             .execute_on_dest_context();
 
         self.daos().insert(dao.clone());

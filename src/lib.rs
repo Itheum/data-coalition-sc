@@ -19,7 +19,8 @@ pub trait DataCoalition: config::ConfigModule + dao::DaoModule + aggregate::Aggr
     #[payable("*")]
     #[endpoint(create)]
     fn create_endpoint(&self) {
-        let dao = self.create_dao();
+        let payment = self.call_value().single_esdt();
+        let dao = self.create_dao(payment);
         let app_id = self.register_aggregator_app(&dao);
 
         self.coalitions().insert(dao, app_id);
