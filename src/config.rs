@@ -1,5 +1,7 @@
 multiversx_sc::imports!();
 
+pub type UserId = usize;
+
 #[multiversx_sc::module]
 pub trait ConfigModule {
     #[endpoint(initConfigModule)]
@@ -30,6 +32,9 @@ pub trait ConfigModule {
     #[view(getAdmins)]
     #[storage_mapper("config:admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[storage_mapper("users")]
+    fn users(&self) -> UserMapper;
 
     #[storage_mapper("config:native_token")]
     fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
