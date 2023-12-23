@@ -5,6 +5,7 @@ use aggregate::AggregatorAppId;
 multiversx_sc::imports!();
 
 pub mod aggregate;
+pub mod board;
 pub mod category;
 pub mod config;
 pub mod dao;
