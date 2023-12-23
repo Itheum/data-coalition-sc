@@ -2,6 +2,12 @@ multiversx_sc::imports!();
 
 #[multiversx_sc::module]
 pub trait ConfigModule {
+    #[endpoint(initConfigModule)]
+    fn init_config_module_endpoint(&self, native_token: TokenIdentifier) {
+        self.require_caller_is_admin();
+        self.native_token().set(&native_token);
+    }
+
     #[endpoint(addAdmin)]
     fn add_admin_endpoint(&self, address: ManagedAddress) {
         self.require_caller_is_admin();
@@ -24,4 +30,7 @@ pub trait ConfigModule {
     #[view(getAdmins)]
     #[storage_mapper("config:admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[storage_mapper("config:native_token")]
+    fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
 }
