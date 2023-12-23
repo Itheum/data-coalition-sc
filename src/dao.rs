@@ -41,6 +41,11 @@ pub trait DaoModule: config::ConfigModule {
         dao
     }
 
+    fn require_caller_is_dao(&self) {
+        let caller = self.blockchain().get_caller();
+        require!(self.daos().contains(&caller), "caller must be dao");
+    }
+
     #[storage_mapper("dao:daos")]
     fn daos(&self) -> UnorderedSetMapper<ManagedAddress>;
 
