@@ -1,9 +1,12 @@
+use crate::config;
+
 multiversx_sc::imports!();
 
 #[multiversx_sc::module]
-pub trait DaoModule {
+pub trait DaoModule: config::ConfigModule {
     #[endpoint(initDaoModule)]
     fn init_dao_module_endpoint(&self, dao_manager: ManagedAddress) {
+        self.require_caller_is_admin();
         self.dao_manager().set(&dao_manager);
     }
 

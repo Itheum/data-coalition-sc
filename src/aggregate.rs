@@ -1,11 +1,14 @@
+use crate::config;
+
 multiversx_sc::imports!();
 
 pub type AggregatorAppId = u64;
 
 #[multiversx_sc::module]
-pub trait AggregateModule {
+pub trait AggregateModule: config::ConfigModule {
     #[endpoint(initAggregateModule)]
     fn init_aggregate_module_endpoint(&self, data_aggregator: ManagedAddress) {
+        self.require_caller_is_admin();
         self.data_aggregator().set(&data_aggregator);
     }
 

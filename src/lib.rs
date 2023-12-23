@@ -5,10 +5,11 @@ use aggregate::AggregatorAppId;
 multiversx_sc::imports!();
 
 pub mod aggregate;
+pub mod config;
 pub mod dao;
 
 #[multiversx_sc::contract]
-pub trait DataCoalition: dao::DaoModule + aggregate::AggregateModule {
+pub trait DataCoalition: config::ConfigModule + dao::DaoModule + aggregate::AggregateModule {
     #[init]
     fn init(&self) {}
 
