@@ -16,7 +16,10 @@ pub trait DataCoalition:
     config::ConfigModule + dao::DaoModule + aggregate::AggregateModule + category::CategoryModule + board::BoardModule + stake::StakeModule
 {
     #[init]
-    fn init(&self) {}
+    fn init(&self) {
+        let caller = self.blockchain().get_caller();
+        self.admins().insert(caller);
+    }
 
     #[upgrade]
     fn upgrade(&self) {}
