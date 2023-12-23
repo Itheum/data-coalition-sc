@@ -9,9 +9,12 @@ pub mod board;
 pub mod category;
 pub mod config;
 pub mod dao;
+pub mod stake;
 
 #[multiversx_sc::contract]
-pub trait DataCoalition: config::ConfigModule + dao::DaoModule + aggregate::AggregateModule + category::CategoryModule {
+pub trait DataCoalition:
+    config::ConfigModule + dao::DaoModule + aggregate::AggregateModule + category::CategoryModule + board::BoardModule + stake::StakeModule
+{
     #[init]
     fn init(&self) {}
 
