@@ -35,6 +35,16 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         self.add_board_member(dao, address);
     }
 
+    #[endpoint(unlockBoardMember)]
+    fn unlock_board_member_endpoint(&self, address: ManagedAddress) {
+        self.require_caller_is_dao();
+        let dao = self.blockchain().get_caller();
+        let user = self.users().get_or_create_user(&address);
+        require!(self.board_members(&dao).contains(&user), "not a board member");
+
+        self.stake_unlock_time(user).set(0);
+    }
+
     fn add_board_member(&self, dao: ManagedAddress, address: ManagedAddress) {
         let member = self.users().get_or_create_user(&address);
         let endpoint = ManagedBuffer::from(b"assignRole");
