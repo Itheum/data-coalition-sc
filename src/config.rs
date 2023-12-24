@@ -1,3 +1,5 @@
+use crate::aggregate::AggregatorAppId;
+
 multiversx_sc::imports!();
 
 pub type UserId = usize;
@@ -28,6 +30,9 @@ pub trait ConfigModule {
         let is_owner = self.blockchain().get_owner_address() == caller;
         require!(is_admin || is_owner, "caller must be admin");
     }
+
+    #[storage_mapper("coalitions")]
+    fn coalitions(&self) -> MapMapper<ManagedAddress, AggregatorAppId>;
 
     #[view(getAdmins)]
     #[storage_mapper("config:admins")]

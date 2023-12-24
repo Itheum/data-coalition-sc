@@ -1,7 +1,5 @@
 #![no_std]
 
-use aggregate::AggregatorAppId;
-
 multiversx_sc::imports!();
 
 pub mod aggregate;
@@ -68,7 +66,4 @@ pub trait DataCoalition:
     fn revoke_access_endpoint(&self, dao: ManagedAddress) {
         // TODO: implement
     }
-
-    #[storage_mapper("coalitions")]
-    fn coalitions(&self) -> MapMapper<ManagedAddress, AggregatorAppId>;
 }
