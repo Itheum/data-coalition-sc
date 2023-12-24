@@ -2,6 +2,10 @@ use crate::config;
 
 multiversx_sc::imports!();
 
+const DEFAULT_QUORUM: u64 = 1;
+const DEFAULT_MIN_TO_PROPOSE: u64 = 1;
+const DEFAULT_PLUG_WEIGHT_DECIMALS: u8 = 0;
+
 #[multiversx_sc::module]
 pub trait DaoModule: config::ConfigModule {
     #[endpoint(initDaoModule)]
@@ -39,6 +43,18 @@ pub trait DaoModule: config::ConfigModule {
         self.daos().insert(dao.clone());
 
         dao
+    }
+
+    fn configure_plug(&self, dao: ManagedAddress) {
+        let contract = self.blockchain().get_sc_address();
+        let endpoint = ManagedBuffer::from(b"setPlug");
+        let mut args = ManagedVec::new();
+        args.push(contract.as_managed_buffer().clone());
+        args.push(BigUint::from(DEFAULT_QUORUM).to_bytes_be_buffer());
+        args.push(BigUint::from(DEFAULT_MIN_TO_PROPOSE).to_bytes_be_buffer());
+        args.push(ManagedBuffer::from(&[DEFAULT_PLUG_WEIGHT_DECIMALS]));
+
+        self.execute_unilateral_action(dao.clone(), endpoint, args, 10_000_000);
     }
 
     fn execute_unilateral_action(&self, dao: ManagedAddress, endpoint: ManagedBuffer, args: ManagedVec<ManagedBuffer>, gas_limit: u64) {
