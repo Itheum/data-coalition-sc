@@ -46,6 +46,16 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule {
         self.board_members(&dao).insert(member);
     }
 
+    fn configure_board_permissions(&self, dao: ManagedAddress) {
+        let permission = ManagedBuffer::from(b"interactCoalition");
+        let contract = self.blockchain().get_sc_address();
+        let endpoint = ManagedBuffer::new();
+        self.create_permission(dao.clone(), permission.clone(), BigUint::zero(), contract, endpoint, ManagedVec::new());
+
+        let role = ManagedBuffer::from(BOARD_ROLE_NAME);
+        self.create_policy(dao, dao::PolicyMethod::Majority, role, permission, BigUint::zero(), 0);
+    }
+
     #[storage_mapper("board:members")]
     fn board_members(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
 

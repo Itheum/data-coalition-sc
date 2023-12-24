@@ -1,10 +1,20 @@
 use crate::config;
 
 multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 const DEFAULT_QUORUM: u64 = 1;
 const DEFAULT_MIN_TO_PROPOSE: u64 = 1;
 const DEFAULT_PLUG_WEIGHT_DECIMALS: u8 = 0;
+
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq)]
+pub enum PolicyMethod {
+    Weight,
+    One,
+    All,
+    Quorum,
+    Majority,
+}
 
 #[multiversx_sc::module]
 pub trait DaoModule: config::ConfigModule {
@@ -47,12 +57,68 @@ pub trait DaoModule: config::ConfigModule {
 
     fn configure_plug(&self, dao: ManagedAddress) {
         let contract = self.blockchain().get_sc_address();
-        let endpoint = ManagedBuffer::from(b"setPlug");
         let mut args = ManagedVec::new();
         args.push(contract.as_managed_buffer().clone());
         args.push(BigUint::from(DEFAULT_QUORUM).to_bytes_be_buffer());
         args.push(BigUint::from(DEFAULT_MIN_TO_PROPOSE).to_bytes_be_buffer());
         args.push(ManagedBuffer::from(&[DEFAULT_PLUG_WEIGHT_DECIMALS]));
+
+        self.execute_unilateral_action(dao.clone(), ManagedBuffer::from(b"setPlug"), args, 10_000_000);
+    }
+
+    fn create_permission(
+        &self,
+        dao: ManagedAddress,
+        permission_name: ManagedBuffer,
+        value: BigUint,
+        destination: ManagedAddress,
+        endpoint: ManagedBuffer,
+        payments: ManagedVec<EsdtTokenPayment>,
+    ) {
+        let mut args = ManagedVec::new();
+        args.push(permission_name);
+        args.push(value.to_bytes_be_buffer());
+        args.push(destination.as_managed_buffer().clone());
+        args.push(endpoint);
+
+        for payment in payments.iter() {
+            args.push(payment.token_identifier.as_managed_buffer().clone());
+            args.push(payment.amount.to_bytes_be_buffer());
+            args.push(ManagedBuffer::from(&[payment.token_nonce as u8]));
+        }
+
+        self.execute_unilateral_action(dao.clone(), ManagedBuffer::from(b"createPermission"), args, 10_000_000);
+    }
+
+    fn create_policy(
+        &self,
+        dao: ManagedAddress,
+        method: PolicyMethod,
+        role: ManagedBuffer,
+        permission: ManagedBuffer,
+        quorum: BigUint,
+        voting_period_minutes: usize,
+    ) {
+        let endpoint = match method {
+            PolicyMethod::Weight => ManagedBuffer::from(b"createPolicyWeighted"),
+            PolicyMethod::One => ManagedBuffer::from(b"createPolicyOne"),
+            PolicyMethod::All => ManagedBuffer::from(b"createPolicyAll"),
+            PolicyMethod::Quorum => ManagedBuffer::from(b"createPolicyQuorum"),
+            PolicyMethod::Majority => ManagedBuffer::from(b"createPolicyMajority"),
+        };
+
+        let mut args = ManagedVec::new();
+        args.push(role);
+        args.push(permission);
+
+        if method == PolicyMethod::Weight {
+            args.push(quorum.to_bytes_be_buffer());
+            args.push(ManagedBuffer::from(&[voting_period_minutes as u8]));
+        }
+
+        if method == PolicyMethod::Quorum {
+            args.push(ManagedBuffer::from(&[quorum.to_u64().unwrap() as u8]));
+        }
 
         self.execute_unilateral_action(dao.clone(), endpoint, args, 10_000_000);
     }

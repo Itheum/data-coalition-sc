@@ -32,9 +32,10 @@ pub trait DataCoalition:
         let dao = self.create_dao(payment);
         let app_id = self.register_aggregator_app(&dao);
 
+        self.coalitions().insert(dao.clone(), app_id);
         self.configure_plug(dao.clone());
         self.add_board_member(dao.clone(), caller);
-        self.coalitions().insert(dao, app_id);
+        self.configure_board_permissions(dao);
     }
 
     // #[payable("*")]
