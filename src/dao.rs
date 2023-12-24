@@ -27,6 +27,7 @@ pub trait DaoModule: config::ConfigModule {
     #[view(getDaoVoteWeight)]
     fn get_dao_vote_weight_view(&self, address: ManagedAddress, _token: OptionalValue<TokenIdentifier>) -> BigUint {
         // TODO: implement
+
         BigUint::zero()
     }
 
@@ -134,9 +135,7 @@ pub trait DaoModule: config::ConfigModule {
             gas_limit,
         });
 
-        self.dao_contract(dao)
-            .direct_execute_endpoint(actions)
-            .execute_on_dest_context::<()>();
+        self.dao_contract(dao).direct_execute_endpoint(actions).execute_on_dest_context::<()>();
     }
 
     fn require_caller_is_dao(&self) {
