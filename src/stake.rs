@@ -20,6 +20,17 @@ pub trait StakeModule: config::ConfigModule {
         self.lock_stake_for(user);
     }
 
+    #[endpoint(unstake)]
+    fn unstake_endpoint(&self) {
+        let caller = self.blockchain().get_caller();
+        let user = self.users().get_or_create_user(&caller);
+        let stake = self.stakes(user).get();
+        require!(stake > 0, "no stake to unstake");
+        self.require_stake_unlocked_for(user);
+
+        self.stakes(user).clear();
+    }
+
     fn lock_stake_for(&self, user: UserId) {
         let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds().get();
         self.stake_unlock_time(user).set(lock_until);
