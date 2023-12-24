@@ -41,6 +41,22 @@ pub trait DaoModule: config::ConfigModule {
         dao
     }
 
+    fn execute_unilateral_action(&self, dao: ManagedAddress, endpoint: ManagedBuffer, args: ManagedVec<ManagedBuffer>, gas_limit: u64) {
+        let mut actions = MultiValueManagedVec::new();
+        actions.push(dao_proxy::Action {
+            destination: dao.clone(),
+            endpoint,
+            value: BigUint::zero(),
+            payments: ManagedVec::new(),
+            arguments: args,
+            gas_limit,
+        });
+
+        self.dao_contract(dao)
+            .direct_execute_endpoint(actions)
+            .execute_on_dest_context::<()>();
+    }
+
     fn require_caller_is_dao(&self) {
         let caller = self.blockchain().get_caller();
         require!(self.daos().contains(&caller), "caller must be dao");
@@ -54,6 +70,9 @@ pub trait DaoModule: config::ConfigModule {
 
     #[proxy]
     fn dao_manager_contract(&self, to: ManagedAddress) -> dao_manager_proxy::Proxy<Self::Api>;
+
+    #[proxy]
+    fn dao_contract(&self, to: ManagedAddress) -> dao_proxy::Proxy<Self::Api>;
 }
 
 mod dao_manager_proxy {
@@ -64,5 +83,26 @@ mod dao_manager_proxy {
         #[payable("*")]
         #[endpoint(createEntity)]
         fn create_entity_endpoint(&self, features: MultiValueManagedVec<ManagedBuffer>) -> ManagedAddress;
+    }
+}
+
+mod dao_proxy {
+    multiversx_sc::imports!();
+    multiversx_sc::derive_imports!();
+
+    #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, ManagedVecItem, Clone)]
+    pub struct Action<M: ManagedTypeApi> {
+        pub destination: ManagedAddress<M>,
+        pub endpoint: ManagedBuffer<M>,
+        pub value: BigUint<M>,
+        pub payments: ManagedVec<M, EsdtTokenPayment<M>>,
+        pub arguments: ManagedVec<M, ManagedBuffer<M>>,
+        pub gas_limit: u64,
+    }
+
+    #[multiversx_sc::proxy]
+    pub trait DaoContractProxy {
+        #[endpoint(directExecute)]
+        fn direct_execute_endpoint(&self, actions: MultiValueManagedVec<Action<Self::Api>>);
     }
 }
