@@ -35,9 +35,7 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule {
     }
 
     fn add_board_member(&self, dao: ManagedAddress, address: ManagedAddress) {
-        let member = self.users().get_user_id(&address);
-        require!(member != 0, "member does not exist");
-
+        let member = self.users().get_or_create_user(&address);
         let endpoint = ManagedBuffer::from(b"assignRole");
         let mut args = ManagedVec::new();
         args.push(ManagedBuffer::from(BOARD_ROLE_NAME));
