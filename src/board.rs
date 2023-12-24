@@ -4,6 +4,8 @@ use crate::config;
 use crate::config::UserId;
 use crate::dao;
 
+const BOARD_ROLE_NAME: &[u8] = b"board";
+
 #[multiversx_sc::module]
 pub trait BoardModule: config::ConfigModule + dao::DaoModule {
     #[endpoint(setBoardMinStake)]
@@ -26,10 +28,22 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule {
     fn accept_board_member_endpoint(&self, address: ManagedAddress) {
         self.require_caller_is_dao();
         let dao = self.blockchain().get_caller();
+
+        // TODO: assert minimum stake
+
+        self.add_board_member(dao, address);
+    }
+
+    fn add_board_member(&self, dao: ManagedAddress, address: ManagedAddress) {
         let member = self.users().get_user_id(&address);
         require!(member != 0, "member does not exist");
 
-        // TODO: assert minimum stake
+        let endpoint = ManagedBuffer::from(b"assignRole");
+        let mut args = ManagedVec::new();
+        args.push(ManagedBuffer::from(BOARD_ROLE_NAME));
+        args.push(address.as_managed_buffer().clone());
+
+        self.execute_unilateral_action(dao.clone(), endpoint, args, 10_000_000);
 
         self.board_members(&dao).insert(member);
     }

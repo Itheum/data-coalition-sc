@@ -27,12 +27,33 @@ pub trait DataCoalition:
     #[payable("*")]
     #[endpoint(create)]
     fn create_endpoint(&self) {
+        let caller = self.blockchain().get_caller();
         let payment = self.call_value().single_esdt();
         let dao = self.create_dao(payment);
         let app_id = self.register_aggregator_app(&dao);
 
+        self.add_board_member(dao.clone(), caller);
+
         self.coalitions().insert(dao, app_id);
     }
+
+    // #[payable("*")]
+    // #[endpoint(execute)]
+    // fn execute_endpoint(&self, destination: ManagedAddress, endpoint: ManagedBuffer) {
+    //     self.require_caller_is_dao();
+    //     let egld_value = self.call_value().egld_value().clone_value();
+    //     let transfers = self.call_value().all_esdt_transfers();
+
+    //     let mut call = self.send().contract_call::<()>(destination, endpoint);
+
+    //     call.push_raw_argument()
+
+    //     if egld_value > 0 {
+    //         call.with_egld_transfer(egld_value).transfer_execute();
+    //     }
+
+    //     call.with_multi_token_transfer(transfers.clone_value()).transfer_execute();
+    // }
 
     #[payable("*")]
     #[endpoint(grantAccess)]
