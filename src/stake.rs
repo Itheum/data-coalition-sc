@@ -17,8 +17,28 @@ pub trait StakeModule: config::ConfigModule {
         let user = self.users().get_or_create_user(&caller);
 
         self.stakes(user).update(|stake| *stake += payment.amount);
+        self.lock_stake_for(user);
+    }
+
+    fn lock_stake_for(&self, user: UserId) {
+        let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds().get();
+        self.stake_unlock_time(user).set(lock_until);
+    }
+
+    fn require_stake_unlocked_for(&self, user: UserId) {
+        let current_time = self.blockchain().get_block_timestamp();
+        let unlock_time = self.stake_unlock_time(user).get();
+        require!(current_time > unlock_time, "stake is locked");
     }
 
     #[storage_mapper("stake:stakes")]
     fn stakes(&self, user: UserId) -> SingleValueMapper<BigUint>;
+
+    #[view(getStakeUnlockTime)]
+    #[storage_mapper("stake:unlock_time")]
+    fn stake_unlock_time(&self, user: UserId) -> SingleValueMapper<u64>;
+
+    #[view(getStakeLockTimeSeconds)]
+    #[storage_mapper("stake:lock_time_seconds")]
+    fn stake_lock_time_seconds(&self) -> SingleValueMapper<u64>;
 }

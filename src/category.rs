@@ -1,11 +1,13 @@
 multiversx_sc::imports!();
 
-use crate::{config, dao};
+use crate::config;
+use crate::dao;
+use crate::stake;
 
 pub type CategoryName<M> = ManagedBuffer<M>;
 
 #[multiversx_sc::module]
-pub trait CategoryModule: config::ConfigModule + dao::DaoModule {
+pub trait CategoryModule: config::ConfigModule + dao::DaoModule + stake::StakeModule {
     #[endpoint(addCategory)]
     fn add_category_endpoint(&self, category: CategoryName<Self::Api>) {
         self.require_caller_is_dao();

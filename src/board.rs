@@ -3,11 +3,12 @@ multiversx_sc::imports!();
 use crate::config;
 use crate::config::UserId;
 use crate::dao;
+use crate::stake;
 
 const BOARD_ROLE_NAME: &[u8] = b"board";
 
 #[multiversx_sc::module]
-pub trait BoardModule: config::ConfigModule + dao::DaoModule {
+pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModule {
     #[endpoint(setBoardMinStake)]
     fn set_board_min_stake_endpoint(&self, amount: BigUint) {
         self.require_caller_is_dao();

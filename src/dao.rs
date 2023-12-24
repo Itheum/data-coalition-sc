@@ -1,4 +1,5 @@
 use crate::config;
+use crate::stake;
 
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
@@ -17,7 +18,7 @@ pub enum PolicyMethod {
 }
 
 #[multiversx_sc::module]
-pub trait DaoModule: config::ConfigModule {
+pub trait DaoModule: config::ConfigModule + stake::StakeModule {
     #[endpoint(initDaoModule)]
     fn init_dao_module_endpoint(&self, dao_manager: ManagedAddress) {
         self.require_caller_is_admin();
