@@ -24,11 +24,14 @@ pub trait StakeModule: config::ConfigModule {
     fn unstake_endpoint(&self) {
         let caller = self.blockchain().get_caller();
         let user = self.users().get_or_create_user(&caller);
+        let native_token = self.native_token().get();
         let stake = self.stakes(user).get();
+
         require!(stake > 0, "no stake to unstake");
         self.require_stake_unlocked_for(user);
 
         self.stakes(user).clear();
+        self.send().direct_esdt(&caller, &native_token, 0, &stake);
     }
 
     fn lock_stake_for(&self, user: UserId) {
