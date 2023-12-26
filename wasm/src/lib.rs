@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           12
-// Async Callback (empty):               1
-// Total number of exported functions:  14
+// Endpoints:                           21
+// Async Callback:                       1
+// Total number of exported functions:  23
 
 #![no_std]
 
@@ -26,6 +26,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         create => create_endpoint
         grantAccess => grant_access_endpoint
         revokeAccess => revoke_access_endpoint
+        initConfigModule => init_config_module_endpoint
         addAdmin => add_admin_endpoint
         removeAdmin => remove_admin_endpoint
         getAdmins => admins
@@ -34,7 +35,15 @@ multiversx_sc_wasm_adapter::endpoints! {
         getDaoMembers => get_dao_members_view
         initAggregateModule => init_aggregate_module_endpoint
         addCategory => add_category_endpoint
+        setBoardMinStake => set_board_min_stake_endpoint
+        setBoardMinStakeDuration => set_board_min_stake_duration_endpoint
+        acceptBoardMember => accept_board_member_endpoint
+        unlockBoardMember => unlock_board_member_endpoint
+        stake => stake_endpoint
+        unstake => unstake_endpoint
+        getStakeUnlockTime => stake_unlock_time
+        getStakeLockTimeSeconds => stake_lock_time_seconds
     )
 }
 
-multiversx_sc_wasm_adapter::async_callback_empty! {}
+multiversx_sc_wasm_adapter::async_callback! { data_coalition }
