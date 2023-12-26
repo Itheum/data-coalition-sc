@@ -43,4 +43,11 @@ pub trait ConfigModule {
 
     #[storage_mapper("config:native_token")]
     fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
+
+    #[storage_mapper("config:delegators")]
+    fn delegators(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
+
+    #[view(getDaoWeight)]
+    #[storage_mapper("config:delegations_amount")]
+    fn delegations_amount(&self, dao: &ManagedAddress, user: UserId) -> SingleValueMapper<BigUint>;
 }

@@ -58,13 +58,53 @@ pub trait DataCoalition:
     #[endpoint(grantAccess)]
     fn grant_access_endpoint(&self, dao: ManagedAddress, category: ManagedBuffer) {
         self.require_category_exists(&dao, &category);
-        let transfers = self.call_value().all_esdt_transfers();
+        let caller = self.blockchain().get_caller();
+        let transfers = self.call_value().all_esdt_transfers().clone_value();
 
-        self.delegate_aggregator(dao, category, transfers.clone_value());
+        self.delegate_aggregator(dao.clone(), category, transfers.clone())
+            .with_callback(self.callbacks().grant_access_callback(caller, transfers, dao))
+            .call_and_exit();
+    }
+
+    #[callback]
+    fn grant_access_callback(
+        &self,
+        original_caller: ManagedAddress,
+        original_payments: ManagedVec<EsdtTokenPayment<Self::Api>>,
+        dao: ManagedAddress,
+        #[call_result] result: ManagedAsyncCallResult<()>,
+    ) {
+        let user = self.users().get_user_id(&original_caller);
+        match result {
+            ManagedAsyncCallResult::Ok(()) => {
+                self.delegators(&dao).insert(user);
+                self.delegations_amount(&dao, user).update(|val| *val += BigUint::from(original_payments.len()));
+            }
+            ManagedAsyncCallResult::Err(_) => {}
+        };
     }
 
     #[endpoint(revokeAccess)]
     fn revoke_access_endpoint(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
-        self.undelegate_aggregator(dao, collection, nonce);
+        let caller = self.blockchain().get_caller();
+
+        self.undelegate_aggregator(dao.clone(), collection, nonce)
+            .with_callback(self.callbacks().revoke_access_callback(caller, dao))
+            .call_and_exit();
+    }
+
+    #[callback]
+    fn revoke_access_callback(&self, original_caller: ManagedAddress, dao: ManagedAddress, #[call_result] result: ManagedAsyncCallResult<()>) {
+        let user = self.users().get_user_id(&original_caller);
+        match result {
+            ManagedAsyncCallResult::Ok(()) => {
+                let amount = BigUint::from(1u8);
+                self.delegations_amount(&dao, user).update(|val| *val -= amount);
+                if self.delegations_amount(&dao, user).get() == 0 {
+                    self.delegators(&dao).swap_remove(&user);
+                }
+            }
+            ManagedAsyncCallResult::Err(_) => {}
+        };
     }
 }

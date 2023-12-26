@@ -22,38 +22,28 @@ pub trait AggregateModule: config::ConfigModule {
         app_id
     }
 
-    fn delegate_aggregator(&self, dao: ManagedAddress, category: ManagedBuffer, transfers: ManagedVec<EsdtTokenPayment>) {
+    fn delegate_aggregator(&self, dao: ManagedAddress, category: ManagedBuffer, transfers: ManagedVec<EsdtTokenPayment>) -> AsyncCall {
         let data_aggregator = self.data_aggregator().get();
         let app_id = self.coalitions().get(&dao).unwrap();
 
         self.data_aggregator_contract(data_aggregator)
             .delegate_endpoint(app_id, category)
             .with_multi_token_transfer(transfers)
-            .transfer_execute();
+            .async_call()
     }
 
-    fn undelegate_aggregator(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+    fn undelegate_aggregator(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) -> AsyncCall {
         let data_aggregator = self.data_aggregator().get();
         let app_id = self.coalitions().get(&dao).unwrap();
 
         self.data_aggregator_contract(data_aggregator)
             .undelegate_endpoint(app_id, collection, nonce)
-            .transfer_execute();
+            .async_call()
     }
 
-    #[callback]
-    fn delegate_callback(&self, #[call_result] result: ManagedAsyncCallResult<()>) {
-        match result {
-            ManagedAsyncCallResult::Ok(()) => {
-                // TODO: implement
-            }
-            ManagedAsyncCallResult::Err(_) => {
-                // TODO: revert any changes
-            }
-        };
+    fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+        // TODO: implement
     }
-
-    fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {}
 
     #[storage_mapper("aggregate:contract")]
     fn data_aggregator(&self) -> SingleValueMapper<ManagedAddress>;

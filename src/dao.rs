@@ -27,9 +27,14 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
 
     #[view(getDaoVoteWeight)]
     fn get_dao_vote_weight_view(&self, address: ManagedAddress, _token: OptionalValue<TokenIdentifier>) -> BigUint {
-        // TODO: implement
+        let dao = self.blockchain().get_caller();
+        let user = self.users().get_user_id(&address);
 
-        BigUint::zero()
+        if user == 0 {
+            return BigUint::zero();
+        }
+
+        self.delegations_amount(&dao, user).get()
     }
 
     #[view(getDaoMembers)]
