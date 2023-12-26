@@ -1,4 +1,4 @@
-use crate::aggregate::AggregatorAppId;
+use crate::aggregate::data_aggregator_proxy;
 
 multiversx_sc::imports!();
 
@@ -32,7 +32,7 @@ pub trait ConfigModule {
     }
 
     #[storage_mapper("coalitions")]
-    fn coalitions(&self) -> MapMapper<ManagedAddress, AggregatorAppId>;
+    fn coalitions(&self) -> MapMapper<ManagedAddress, data_aggregator_proxy::AppId>;
 
     #[view(getAdmins)]
     #[storage_mapper("config:admins")]

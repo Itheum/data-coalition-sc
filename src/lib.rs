@@ -24,11 +24,11 @@ pub trait DataCoalition:
 
     #[payable("*")]
     #[endpoint(create)]
-    fn create_endpoint(&self) {
+    fn create_endpoint(&self, name: ManagedBuffer) {
         let caller = self.blockchain().get_caller();
         let payment = self.call_value().single_esdt();
         let dao = self.create_dao(payment);
-        let app_id = self.register_aggregator_app(&dao);
+        let app_id = self.register_aggregator_app(name, dao.clone());
 
         self.coalitions().insert(dao.clone(), app_id);
         self.configure_plug(dao.clone());
@@ -58,12 +58,13 @@ pub trait DataCoalition:
     #[endpoint(grantAccess)]
     fn grant_access_endpoint(&self, dao: ManagedAddress, category: ManagedBuffer) {
         self.require_category_exists(&dao, &category);
+        let transfers = self.call_value().all_esdt_transfers();
 
-        // TODO: implement
+        self.delegate_aggregator(dao, category, transfers.clone_value());
     }
 
     #[endpoint(revokeAccess)]
-    fn revoke_access_endpoint(&self, dao: ManagedAddress) {
-        // TODO: implement
+    fn revoke_access_endpoint(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+        self.undelegate_aggregator(dao, collection, nonce);
     }
 }
