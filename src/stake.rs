@@ -6,7 +6,7 @@ use crate::config::UserId;
 #[multiversx_sc::module]
 pub trait StakeModule: config::ConfigModule {
     #[endpoint(stake)]
-    fn stake_endpoint(&self) {
+    fn stake_endpoint(&self, extra_lock_seconds: u64) {
         let payment = self.call_value().single_esdt();
 
         require!(!self.native_token().is_empty(), "stake token not set");
@@ -17,7 +17,7 @@ pub trait StakeModule: config::ConfigModule {
         let user = self.users().get_or_create_user(&caller);
 
         self.stakes(user).update(|stake| *stake += payment.amount);
-        self.lock_stake_for(user);
+        self.lock_stake_for(user, extra_lock_seconds);
     }
 
     #[endpoint(unstake)]
@@ -34,8 +34,8 @@ pub trait StakeModule: config::ConfigModule {
         self.send().direct_esdt(&caller, &native_token, 0, &stake);
     }
 
-    fn lock_stake_for(&self, user: UserId) {
-        let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds().get();
+    fn lock_stake_for(&self, user: UserId, extra_lock_seconds: u64) {
+        let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds().get() + extra_lock_seconds;
         self.stake_unlock_time(user).set(lock_until);
     }
 
