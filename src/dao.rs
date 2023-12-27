@@ -34,7 +34,14 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
             return BigUint::zero();
         }
 
-        self.delegations_amount(&dao, user).get()
+        let delegations_amount = self.delegations_amount(&dao, user).get();
+        let is_board_member = self.board_members(&dao).contains(&user);
+
+        if is_board_member {
+            return delegations_amount + BigUint::from(1u8);
+        }
+
+        delegations_amount
     }
 
     #[view(getDaoMembers)]
