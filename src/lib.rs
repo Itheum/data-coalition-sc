@@ -12,10 +12,13 @@ pub mod stake;
 
 #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi)]
 pub struct Info<M: ManagedTypeApi> {
+    pub native_token: TokenIdentifier<M>,
     pub aggregator: ManagedAddress<M>,
     pub categories: ManagedVec<M, ManagedBuffer<M>>,
-    pub admins: ManagedVec<M, ManagedAddress<M>>,
     pub delegators: usize,
+    pub board_stake_amount: BigUint<M>,
+    pub board_stake_duration: u64,
+    pub stake_lock_time: u64,
 }
 
 #[multiversx_sc::contract]
@@ -120,10 +123,13 @@ pub trait DataCoalition:
     #[view(getInfo)]
     fn get_info_view(&self, dao: ManagedAddress) -> Info<Self::Api> {
         Info {
+            native_token: self.native_token().get(),
             aggregator: self.data_aggregator().get(),
             categories: self.categories(&dao).iter().collect(),
-            admins: self.admins().iter().collect(),
             delegators: self.delegators(&dao).len(),
+            board_stake_amount: self.board_stake_amount(&dao).get(),
+            board_stake_duration: self.board_stake_duration(&dao).get(),
+            stake_lock_time: self.stake_lock_time_seconds().get(),
         }
     }
 }
