@@ -22,17 +22,19 @@ pub trait StakeModule: config::ConfigModule {
     }
 
     #[endpoint(unstake)]
-    fn unstake_endpoint(&self, dao: ManagedAddress) {
+    fn unstake_endpoint(&self, dao: ManagedAddress, amount: BigUint) {
         let caller = self.blockchain().get_caller();
         let user = self.users().get_or_create_user(&caller);
         let native_token = self.native_token().get();
         let stake = self.stakes(&dao, user).get();
 
+        require!(amount > 0, "must not unstake zero");
         require!(stake > 0, "no stake to unstake");
+        require!(stake >= amount, "insufficient stake");
         self.require_stake_unlocked_for(&dao, user);
 
-        self.stakes(&dao, user).clear();
-        self.send().direct_esdt(&caller, &native_token, 0, &stake);
+        self.stakes(&dao, user).update(|stake| *stake -= &amount);
+        self.send().direct_esdt(&caller, &native_token, 0, &amount);
     }
 
     fn lock_stake_for(&self, dao: &ManagedAddress, user: UserId, extra_lock_seconds: u64) {
