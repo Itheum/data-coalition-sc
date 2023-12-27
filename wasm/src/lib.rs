@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           21
+// Endpoints:                           24
 // Async Callback:                       1
-// Total number of exported functions:  23
+// Total number of exported functions:  26
 
 #![no_std]
 
@@ -26,15 +26,18 @@ multiversx_sc_wasm_adapter::endpoints! {
         create => create_endpoint
         grantAccess => grant_access_endpoint
         revokeAccess => revoke_access_endpoint
+        getInfo => get_info_view
         initConfigModule => init_config_module_endpoint
         addAdmin => add_admin_endpoint
         removeAdmin => remove_admin_endpoint
         getAdmins => admins
+        getDaoWeight => delegations_amount
         initDaoModule => init_dao_module_endpoint
         getDaoVoteWeight => get_dao_vote_weight_view
         getDaoMembers => get_dao_members_view
         initAggregateModule => init_aggregate_module_endpoint
         addCategory => add_category_endpoint
+        removeCategory => remove_category_endpoint
         setBoardMinStake => set_board_min_stake_endpoint
         setBoardMinStakeDuration => set_board_min_stake_duration_endpoint
         acceptBoardMember => accept_board_member_endpoint
