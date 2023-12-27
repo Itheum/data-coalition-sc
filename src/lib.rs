@@ -1,6 +1,7 @@
 #![no_std]
 
 multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 pub mod aggregate;
 pub mod board;
@@ -8,6 +9,14 @@ pub mod category;
 pub mod config;
 pub mod dao;
 pub mod stake;
+
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi)]
+pub struct Info<M: ManagedTypeApi> {
+    pub aggregator: ManagedAddress<M>,
+    pub categories: ManagedVec<M, ManagedBuffer<M>>,
+    pub admins: ManagedVec<M, ManagedAddress<M>>,
+    pub delegators: usize,
+}
 
 #[multiversx_sc::contract]
 pub trait DataCoalition:
@@ -106,5 +115,15 @@ pub trait DataCoalition:
             }
             ManagedAsyncCallResult::Err(_) => {}
         };
+    }
+
+    #[view(getInfo)]
+    fn get_info_view(&self, dao: ManagedAddress) -> Info<Self::Api> {
+        Info {
+            aggregator: self.data_aggregator().get(),
+            categories: self.categories(&dao).iter().collect(),
+            admins: self.admins().iter().collect(),
+            delegators: self.delegators(&dao).len(),
+        }
     }
 }
