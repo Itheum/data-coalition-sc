@@ -4,21 +4,19 @@ use crate::config;
 use crate::dao;
 use crate::stake;
 
-pub type CategoryName<M> = ManagedBuffer<M>;
-
 #[multiversx_sc::module]
 pub trait CategoryModule: config::ConfigModule + dao::DaoModule + stake::StakeModule {
     #[endpoint(addCategory)]
-    fn add_category_endpoint(&self, category: CategoryName<Self::Api>) {
+    fn add_category_endpoint(&self, name: ManagedBuffer) {
         self.require_caller_is_dao();
         let dao = self.blockchain().get_caller();
-        require!(!self.categories(&dao).contains(&category), "category already exists");
+        require!(!self.categories(&dao).contains(&name), "category already exists");
 
-        self.categories(&dao).insert(category);
+        self.categories(&dao).insert(name);
     }
 
-    fn require_category_exists(&self, dao: &ManagedAddress, category: &CategoryName<Self::Api>) {
-        require!(self.categories(&dao).contains(category), "category does not exist");
+    fn require_category_exists(&self, dao: &ManagedAddress, name: &ManagedBuffer) {
+        require!(self.categories(&dao).contains(name), "category does not exist");
     }
 
     #[storage_mapper("category:categories")]
