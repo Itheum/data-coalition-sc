@@ -30,12 +30,12 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         let dao = self.blockchain().get_caller();
         let user = self.users().get_or_create_user(&address);
 
-        let user_stake = self.stakes(user).get();
+        let user_stake = self.stakes(&dao, user).get();
         let board_stake_amount = self.board_stake_amount(&dao).get();
         require!(user_stake >= board_stake_amount, "insufficient stake");
 
         let current_time = self.blockchain().get_block_timestamp();
-        let staked_locked_until = self.stake_unlock_time(user).get();
+        let staked_locked_until = self.stake_unlock_time(&dao, user).get();
         let board_stake_duration = self.board_stake_duration(&dao).get();
         require!(staked_locked_until > current_time + board_stake_duration, "stake unlocks too early");
 
@@ -49,7 +49,7 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         let user = self.users().get_or_create_user(&address);
         require!(self.board_members(&dao).contains(&user), "not a board member");
 
-        self.stake_unlock_time(user).set(0);
+        self.stake_unlock_time(&dao, user).set(0);
     }
 
     fn add_board_member(&self, dao: ManagedAddress, address: ManagedAddress) {
