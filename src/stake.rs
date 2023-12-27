@@ -5,6 +5,11 @@ use crate::config::UserId;
 
 #[multiversx_sc::module]
 pub trait StakeModule: config::ConfigModule {
+    fn configure_staking(&self, dao: &ManagedAddress, native_token: TokenIdentifier, lock_time_seconds: u64) {
+        self.native_token().set(&native_token);
+        self.stake_lock_time_seconds(&dao).set(lock_time_seconds);
+    }
+
     #[payable("*")]
     #[endpoint(stake)]
     fn stake_endpoint(&self, dao: ManagedAddress, extra_lock_seconds: u64) {
@@ -38,7 +43,7 @@ pub trait StakeModule: config::ConfigModule {
     }
 
     fn lock_stake_for(&self, dao: &ManagedAddress, user: UserId, extra_lock_seconds: u64) {
-        let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds().get() + extra_lock_seconds;
+        let lock_until = self.blockchain().get_block_timestamp() + self.stake_lock_time_seconds(&dao).get() + extra_lock_seconds;
         self.stake_unlock_time(&dao, user).set(lock_until);
     }
 
@@ -57,5 +62,5 @@ pub trait StakeModule: config::ConfigModule {
 
     #[view(getStakeLockTimeSeconds)]
     #[storage_mapper("stake:lock_time_seconds")]
-    fn stake_lock_time_seconds(&self) -> SingleValueMapper<u64>;
+    fn stake_lock_time_seconds(&self, dao: &ManagedAddress) -> SingleValueMapper<u64>;
 }

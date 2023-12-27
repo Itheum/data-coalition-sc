@@ -38,13 +38,14 @@ pub trait DataCoalition:
 
     #[payable("*")]
     #[endpoint(create)]
-    fn create_endpoint(&self, name: ManagedBuffer) {
+    fn create_endpoint(&self, name: ManagedBuffer, native_token: TokenIdentifier, stake_lock_time: u64) {
         let caller = self.blockchain().get_caller();
         let payment = self.call_value().single_esdt();
         let dao = self.create_dao(payment);
         let app_id = self.register_aggregator_app(name, dao.clone());
 
         self.coalitions().insert(dao.clone(), app_id);
+        self.configure_staking(&dao, native_token, stake_lock_time);
         self.configure_plug(dao.clone());
         self.add_board_member(dao.clone(), caller);
         self.configure_board_permissions(dao);
@@ -134,7 +135,7 @@ pub trait DataCoalition:
             delegators: self.delegators(&dao).len(),
             board_stake_amount: self.board_stake_amount(&dao).get(),
             board_stake_duration: self.board_stake_duration(&dao).get(),
-            stake_lock_time: self.stake_lock_time_seconds().get(),
+            stake_lock_time: self.stake_lock_time_seconds(&dao).get(),
             user_stake: self.stakes(&dao, user).get(),
             user_stake_unlocks_at: self.stake_unlock_time(&dao, user).get(),
         }
