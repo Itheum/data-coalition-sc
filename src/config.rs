@@ -35,19 +35,22 @@ pub trait ConfigModule {
     fn coalitions(&self) -> MapMapper<ManagedAddress, data_aggregator_proxy::AppId>;
 
     #[view(getAdmins)]
-    #[storage_mapper("config:admins")]
+    #[storage_mapper("admins")]
     fn admins(&self) -> UnorderedSetMapper<ManagedAddress>;
 
     #[storage_mapper("users")]
     fn users(&self) -> UserMapper;
 
-    #[storage_mapper("config:native_token")]
-    fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
+    #[storage_mapper("board:members")]
+    fn board_members(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
 
-    #[storage_mapper("config:delegators")]
+    #[storage_mapper("delegators")]
     fn delegators(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
 
     #[view(getDaoWeight)]
     #[storage_mapper("config:delegations_amount")]
     fn delegations_amount(&self, dao: &ManagedAddress, user: UserId) -> SingleValueMapper<BigUint>;
+
+    #[storage_mapper("config:native_token")]
+    fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
 }

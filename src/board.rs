@@ -1,7 +1,6 @@
 multiversx_sc::imports!();
 
 use crate::config;
-use crate::config::UserId;
 use crate::dao;
 use crate::stake;
 
@@ -14,23 +13,31 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         self.require_caller_is_dao();
         let dao = self.blockchain().get_caller();
 
-        self.stake_min_amount(&dao).set(&amount);
+        self.board_stake_amount(&dao).set(&amount);
     }
 
-    #[endpoint(setBoardMinStakeDuration)]
+    #[endpoint(setBoardStakeDuration)]
     fn set_board_min_stake_duration_endpoint(&self, duration: u64) {
         self.require_caller_is_dao();
         let dao = self.blockchain().get_caller();
 
-        self.stake_min_duration_seconds(&dao).set(&duration);
+        self.board_stake_duration(&dao).set(&duration);
     }
 
     #[endpoint(acceptBoardMember)]
     fn accept_board_member_endpoint(&self, address: ManagedAddress) {
         self.require_caller_is_dao();
         let dao = self.blockchain().get_caller();
+        let user = self.users().get_or_create_user(&address);
 
-        // TODO: assert minimum stake
+        let user_stake = self.stakes(user).get();
+        let board_stake_amount = self.board_stake_amount(&dao).get();
+        require!(user_stake >= board_stake_amount, "insufficient stake");
+
+        let current_time = self.blockchain().get_block_timestamp();
+        let staked_locked_until = self.stake_unlock_time(user).get();
+        let board_stake_duration = self.board_stake_duration(&dao).get();
+        require!(staked_locked_until > current_time + board_stake_duration, "stake unlocks too early");
 
         self.add_board_member(dao, address);
     }
@@ -46,7 +53,7 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
     }
 
     fn add_board_member(&self, dao: ManagedAddress, address: ManagedAddress) {
-        let member = self.users().get_or_create_user(&address);
+        let user = self.users().get_or_create_user(&address);
         let endpoint = ManagedBuffer::from(b"assignRole");
         let mut args = ManagedVec::new();
         args.push(ManagedBuffer::from(BOARD_ROLE_NAME));
@@ -54,7 +61,7 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
 
         self.execute_unilateral_action(dao.clone(), endpoint, args, 10_000_000);
 
-        self.board_members(&dao).insert(member);
+        self.board_members(&dao).insert(user);
     }
 
     fn configure_board_permissions(&self, dao: ManagedAddress) {
@@ -67,12 +74,9 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         self.create_policy(dao, dao::PolicyMethod::Majority, role, permission, BigUint::zero(), 0);
     }
 
-    #[storage_mapper("board:members")]
-    fn board_members(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
-
-    #[storage_mapper("board:stake_min_amount")]
-    fn stake_min_amount(&self, dao: &ManagedAddress) -> SingleValueMapper<BigUint>;
+    #[storage_mapper("board:stake_amount")]
+    fn board_stake_amount(&self, dao: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
     #[storage_mapper("board:stake_min_duration_seconds")]
-    fn stake_min_duration_seconds(&self, dao: &ManagedAddress) -> SingleValueMapper<u64>;
+    fn board_stake_duration(&self, dao: &ManagedAddress) -> SingleValueMapper<u64>;
 }
