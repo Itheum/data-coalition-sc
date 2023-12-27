@@ -39,7 +39,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         addCategory => add_category_endpoint
         removeCategory => remove_category_endpoint
         setBoardMinStake => set_board_min_stake_endpoint
-        setBoardMinStakeDuration => set_board_min_stake_duration_endpoint
+        setBoardStakeDuration => set_board_min_stake_duration_endpoint
         acceptBoardMember => accept_board_member_endpoint
         unlockBoardMember => unlock_board_member_endpoint
         stake => stake_endpoint
