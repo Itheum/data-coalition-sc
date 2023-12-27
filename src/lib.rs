@@ -19,6 +19,8 @@ pub struct Info<M: ManagedTypeApi> {
     pub board_stake_amount: BigUint<M>,
     pub board_stake_duration: u64,
     pub stake_lock_time: u64,
+    pub user_stake: BigUint<M>,
+    pub user_stake_unlocks_at: u64,
 }
 
 #[multiversx_sc::contract]
@@ -121,7 +123,10 @@ pub trait DataCoalition:
     }
 
     #[view(getInfo)]
-    fn get_info_view(&self, dao: ManagedAddress) -> Info<Self::Api> {
+    fn get_info_view(&self, dao: ManagedAddress, address: OptionalValue<ManagedAddress>) -> Info<Self::Api> {
+        let address = address.into_option().unwrap_or_default();
+        let user = self.users().get_user_id(&address);
+
         Info {
             native_token: self.native_token().get(),
             aggregator: self.data_aggregator().get(),
@@ -130,6 +135,8 @@ pub trait DataCoalition:
             board_stake_amount: self.board_stake_amount(&dao).get(),
             board_stake_duration: self.board_stake_duration(&dao).get(),
             stake_lock_time: self.stake_lock_time_seconds().get(),
+            user_stake: self.stakes(&dao, user).get(),
+            user_stake_unlocks_at: self.stake_unlock_time(&dao, user).get(),
         }
     }
 }
