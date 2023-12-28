@@ -14,6 +14,7 @@ pub mod stake;
 pub struct Info<M: ManagedTypeApi> {
     pub native_token: TokenIdentifier<M>,
     pub aggregator: ManagedAddress<M>,
+    pub aggregator_app: u64,
     pub categories: ManagedVec<M, ManagedBuffer<M>>,
     pub delegators: usize,
     pub board_stake_amount: BigUint<M>,
@@ -131,6 +132,7 @@ pub trait DataCoalition:
         Info {
             native_token: self.native_token().get(),
             aggregator: self.data_aggregator().get(),
+            aggregator_app: self.coalitions().get(&dao).unwrap_or_default(),
             categories: self.categories(&dao).iter().collect(),
             delegators: self.delegators(&dao).len(),
             board_stake_amount: self.board_stake_amount(&dao).get(),
