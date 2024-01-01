@@ -46,6 +46,7 @@ pub trait DataCoalition:
         let app_id = self.register_aggregator_app(name, dao.clone());
 
         self.coalitions().insert(dao.clone(), app_id);
+        self.configure_dao_categories(&dao);
         self.configure_staking(&dao, native_token, stake_lock_time);
         self.configure_plug(dao.clone());
         self.add_board_member(dao.clone(), caller);

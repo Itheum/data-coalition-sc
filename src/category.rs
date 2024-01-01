@@ -4,8 +4,14 @@ use crate::config;
 use crate::dao;
 use crate::stake;
 
+const DEFAULT_CATEGORY_NAME: &[u8] = b"default";
+
 #[multiversx_sc::module]
 pub trait CategoryModule: config::ConfigModule + dao::DaoModule + stake::StakeModule {
+    fn configure_dao_categories(&self, dao: &ManagedAddress) {
+        self.categories(&dao).insert(ManagedBuffer::from(DEFAULT_CATEGORY_NAME));
+    }
+
     #[endpoint(addCategory)]
     fn add_category_endpoint(&self, name: ManagedBuffer) {
         self.require_caller_is_dao();
