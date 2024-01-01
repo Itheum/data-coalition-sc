@@ -53,6 +53,15 @@ pub trait DataCoalition:
         self.configure_board_permissions(dao);
     }
 
+    #[endpoint(createExternal)]
+    fn create_external_endpoint(&self, dao: ManagedAddress, name: ManagedBuffer, native_token: TokenIdentifier, stake_lock_time: u64) {
+        let app_id = self.register_aggregator_app(name, dao.clone());
+
+        self.coalitions().insert(dao.clone(), app_id);
+        self.configure_dao_categories(&dao);
+        self.configure_staking(&dao, native_token, stake_lock_time);
+    }
+
     // #[payable("*")]
     // #[endpoint(execute)]
     // fn execute_endpoint(&self, destination: ManagedAddress, endpoint: ManagedBuffer) {
