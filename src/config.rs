@@ -41,16 +41,16 @@ pub trait ConfigModule {
     #[storage_mapper("users")]
     fn users(&self) -> UserMapper;
 
-    #[storage_mapper("board:members")]
+    #[storage_mapper("board_members")]
     fn board_members(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
 
     #[storage_mapper("delegators")]
     fn delegators(&self, dao: &ManagedAddress) -> UnorderedSetMapper<UserId>;
 
     #[view(getDaoWeight)]
-    #[storage_mapper("config:delegations_amount")]
+    #[storage_mapper("delegations_amount")]
     fn delegations_amount(&self, dao: &ManagedAddress, user: UserId) -> SingleValueMapper<BigUint>;
 
-    #[storage_mapper("config:native_token")]
+    #[storage_mapper("native_token")]
     fn native_token(&self) -> SingleValueMapper<TokenIdentifier>;
 }

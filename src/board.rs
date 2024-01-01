@@ -74,9 +74,9 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         self.create_policy(dao, dao::PolicyMethod::Majority, role, permission, BigUint::zero(), 0);
     }
 
-    #[storage_mapper("board:stake_amount")]
+    #[storage_mapper("board_stake_amount")]
     fn board_stake_amount(&self, dao: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
-    #[storage_mapper("board:stake_min_duration_seconds")]
+    #[storage_mapper("board_stake_duration")]
     fn board_stake_duration(&self, dao: &ManagedAddress) -> SingleValueMapper<u64>;
 }

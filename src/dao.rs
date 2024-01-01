@@ -156,10 +156,10 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
         require!(self.daos().contains(&caller), "caller must be dao");
     }
 
-    #[storage_mapper("dao:daos")]
+    #[storage_mapper("daos")]
     fn daos(&self) -> UnorderedSetMapper<ManagedAddress>;
 
-    #[storage_mapper("dao:manager_contract")]
+    #[storage_mapper("dao_manager")]
     fn dao_manager(&self) -> SingleValueMapper<ManagedAddress>;
 
     #[proxy]
