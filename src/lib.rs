@@ -100,7 +100,14 @@ pub trait DataCoalition:
         dao: ManagedAddress,
         #[call_result] result: ManagedAsyncCallResult<()>,
     ) {
+        let back_transfers = self.blockchain().get_back_transfers();
+
+        if !back_transfers.esdt_payments.is_empty() {
+            self.send().direct_multi(&original_caller, &back_transfers.esdt_payments);
+        }
+
         let user = self.users().get_user_id(&original_caller);
+
         match result {
             ManagedAsyncCallResult::Ok(()) => {
                 self.delegators(&dao).insert(user);
@@ -122,6 +129,7 @@ pub trait DataCoalition:
     #[callback]
     fn revoke_access_callback(&self, original_caller: ManagedAddress, dao: ManagedAddress, #[call_result] result: ManagedAsyncCallResult<()>) {
         let user = self.users().get_user_id(&original_caller);
+
         match result {
             ManagedAsyncCallResult::Ok(()) => {
                 let amount = BigUint::from(1u8);
