@@ -120,10 +120,10 @@ pub trait DataCoalition:
     }
 
     #[endpoint(revokeAccess)]
-    fn revoke_access_endpoint(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+    fn revoke_access_endpoint(&self, dao: ManagedAddress, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>) {
         let caller = self.blockchain().get_caller();
 
-        self.undelegate_aggregator(dao.clone(), collection, nonce)
+        self.undelegate_aggregator(dao.clone(), nfts)
             .with_callback(self.callbacks().revoke_access_callback(caller, dao))
             .call_and_exit();
     }

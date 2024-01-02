@@ -38,13 +38,11 @@ pub trait AggregateModule: config::ConfigModule {
             .async_call()
     }
 
-    fn undelegate_aggregator(&self, dao: ManagedAddress, collection: TokenIdentifier, nonce: u64) -> AsyncCall {
+    fn undelegate_aggregator(&self, dao: ManagedAddress, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>) -> AsyncCall {
         let data_aggregator = self.data_aggregator().get();
         let app_id = self.coalitions().get(&dao).unwrap();
 
-        self.data_aggregator_contract(data_aggregator)
-            .undelegate_endpoint(app_id, collection, nonce)
-            .async_call()
+        self.data_aggregator_contract(data_aggregator).undelegate_endpoint(app_id, nfts).async_call()
     }
 
     fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
@@ -73,6 +71,6 @@ pub mod data_aggregator_proxy {
         fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer, user: OptionalValue<ManagedAddress>);
 
         #[endpoint(undelegate)]
-        fn undelegate_endpoint(&self, app_id: AppId, collection: TokenIdentifier, nonce: u64);
+        fn undelegate_endpoint(&self, app_id: AppId, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>);
     }
 }
