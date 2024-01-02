@@ -10,13 +10,13 @@ pub trait AggregateModule: config::ConfigModule {
         self.data_aggregator().set(&data_aggregator);
     }
 
-    fn register_aggregator_app(&self, name: ManagedBuffer, dao: ManagedAddress) -> data_aggregator_proxy::AppId {
+    fn register_aggregator_app(&self, name: ManagedBuffer) -> data_aggregator_proxy::AppId {
         require!(!self.data_aggregator().is_empty(), "data aggregator not set");
         let data_aggregator = self.data_aggregator().get();
 
         let app_id: data_aggregator_proxy::AppId = self
             .data_aggregator_contract(data_aggregator)
-            .register_app_endpoint(name, OptionalValue::Some(dao))
+            .register_app_endpoint(name)
             .execute_on_dest_context();
 
         app_id
@@ -60,7 +60,7 @@ pub mod data_aggregator_proxy {
     #[multiversx_sc::proxy]
     pub trait DataAggregatorContractProxy {
         #[endpoint(registerApp)]
-        fn register_app_endpoint(&self, name: ManagedBuffer, contract: OptionalValue<ManagedAddress>) -> AppId;
+        fn register_app_endpoint(&self, name: ManagedBuffer) -> AppId;
 
         #[payable("*")]
         #[endpoint(delegate)]

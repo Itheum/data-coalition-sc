@@ -43,7 +43,7 @@ pub trait DataCoalition:
         let caller = self.blockchain().get_caller();
         let payment = self.call_value().single_esdt();
         let dao = self.create_dao(payment);
-        let app_id = self.register_aggregator_app(name, dao.clone());
+        let app_id = self.register_aggregator_app(name);
 
         self.coalitions().insert(dao.clone(), app_id);
         self.configure_dao_categories(&dao);
@@ -57,7 +57,7 @@ pub trait DataCoalition:
     fn create_external_endpoint(&self, dao: ManagedAddress, name: ManagedBuffer, native_token: TokenIdentifier, stake_lock_time: u64) {
         // TODO: reenable guard after rapid prototyping
         // require!(!self.coalitions().contains_key(&dao), "coalition already exists");
-        let app_id = self.register_aggregator_app(name, dao.clone());
+        let app_id = self.register_aggregator_app(name);
 
         self.coalitions().insert(dao.clone(), app_id);
         self.configure_dao_categories(&dao);
