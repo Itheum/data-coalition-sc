@@ -22,12 +22,18 @@ pub trait AggregateModule: config::ConfigModule {
         app_id
     }
 
-    fn delegate_aggregator(&self, dao: ManagedAddress, category: ManagedBuffer, transfers: ManagedVec<EsdtTokenPayment>) -> AsyncCall {
+    fn delegate_aggregator(
+        &self,
+        dao: ManagedAddress,
+        delegator: ManagedAddress,
+        category: ManagedBuffer,
+        transfers: ManagedVec<EsdtTokenPayment>,
+    ) -> AsyncCall {
         let data_aggregator = self.data_aggregator().get();
         let app_id = self.coalitions().get(&dao).unwrap();
 
         self.data_aggregator_contract(data_aggregator)
-            .delegate_endpoint(app_id, category)
+            .delegate_endpoint(app_id, category, OptionalValue::Some(delegator))
             .with_multi_token_transfer(transfers)
             .async_call()
     }
@@ -64,7 +70,7 @@ pub mod data_aggregator_proxy {
 
         #[payable("*")]
         #[endpoint(delegate)]
-        fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer);
+        fn delegate_endpoint(&self, app_id: AppId, segment: ManagedBuffer, user: OptionalValue<ManagedAddress>);
 
         #[endpoint(undelegate)]
         fn undelegate_endpoint(&self, app_id: AppId, collection: TokenIdentifier, nonce: u64);

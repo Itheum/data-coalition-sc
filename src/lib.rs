@@ -89,7 +89,7 @@ pub trait DataCoalition:
         let caller = self.blockchain().get_caller();
         let transfers = self.call_value().all_esdt_transfers().clone_value();
 
-        self.delegate_aggregator(dao.clone(), category, transfers.clone())
+        self.delegate_aggregator(dao.clone(), caller.clone(), category, transfers.clone())
             .with_callback(self.callbacks().grant_access_callback(caller, transfers, dao))
             .call_and_exit();
     }
