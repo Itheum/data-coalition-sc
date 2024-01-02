@@ -55,6 +55,7 @@ pub trait DataCoalition:
 
     #[endpoint(createExternal)]
     fn create_external_endpoint(&self, dao: ManagedAddress, name: ManagedBuffer, native_token: TokenIdentifier, stake_lock_time: u64) {
+        require!(!self.coalitions().contains_key(&dao), "coalition already exists");
         let app_id = self.register_aggregator_app(name, dao.clone());
 
         self.coalitions().insert(dao.clone(), app_id);
