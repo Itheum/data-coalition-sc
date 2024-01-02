@@ -45,7 +45,7 @@ pub trait AggregateModule: config::ConfigModule {
         self.data_aggregator_contract(data_aggregator).undelegate_endpoint(app_id, nfts).async_call()
     }
 
-    fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, collection: TokenIdentifier, nonce: u64) {
+    fn handle_aggregator_undelegate_endpoint(&self, delegator: ManagedAddress, nfts: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>) {
         // TODO: implement
     }
 
