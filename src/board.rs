@@ -68,7 +68,7 @@ pub trait BoardModule: config::ConfigModule + dao::DaoModule + stake::StakeModul
         let permission = ManagedBuffer::from(b"interactCoalition");
         let contract = self.blockchain().get_sc_address();
         let endpoint = ManagedBuffer::new();
-        self.create_permission(dao.clone(), permission.clone(), BigUint::zero(), contract, endpoint, ManagedVec::new());
+        self.create_permission(dao.clone(), permission.clone(), BigUint::zero(), contract, endpoint, ManagedVec::new(), ManagedVec::new());
 
         let role = ManagedBuffer::from(BOARD_ROLE_NAME);
         self.create_policy(dao, dao::PolicyMethod::Majority, role, permission, BigUint::zero(), 0);

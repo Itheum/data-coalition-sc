@@ -87,21 +87,24 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
         value: BigUint,
         destination: ManagedAddress,
         endpoint: ManagedBuffer,
+        args: ManagedVec<ManagedBuffer>,
         payments: ManagedVec<EsdtTokenPayment>,
     ) {
-        let mut args = ManagedVec::new();
-        args.push(permission_name);
-        args.push(value.to_bytes_be_buffer());
-        args.push(destination.as_managed_buffer().clone());
-        args.push(endpoint);
+        let mut inner_args = ManagedVec::new();
+        inner_args.push(permission_name);
+        inner_args.push(value.to_bytes_be_buffer());
+        inner_args.push(destination.as_managed_buffer().clone());
+        inner_args.push(endpoint);
 
-        for payment in payments.iter() {
-            args.push(payment.token_identifier.as_managed_buffer().clone());
-            args.push(payment.amount.to_bytes_be_buffer());
-            args.push(ManagedBuffer::from(&[payment.token_nonce as u8]));
-        }
+        let mut serialized_args = ManagedBuffer::new();
+        let _ = args.top_encode(&mut serialized_args);
+        inner_args.push(serialized_args);
 
-        self.execute_unilateral_action(dao.clone(), ManagedBuffer::from(b"createPermission"), args, 10_000_000);
+        let mut serialized_payments = ManagedBuffer::new();
+        let _ = payments.top_encode(&mut serialized_payments);
+        inner_args.push(serialized_payments);
+
+        self.execute_unilateral_action(dao.clone(), ManagedBuffer::from(b"createPermission"), inner_args, 10_000_000);
     }
 
     fn create_policy(
