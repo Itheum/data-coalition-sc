@@ -64,23 +64,16 @@ pub trait DataCoalition:
         self.configure_staking(&dao, native_token, stake_lock_time);
     }
 
-    // #[payable("*")]
-    // #[endpoint(execute)]
-    // fn execute_endpoint(&self, destination: ManagedAddress, endpoint: ManagedBuffer) {
-    //     self.require_caller_is_dao();
-    //     let egld_value = self.call_value().egld_value().clone_value();
-    //     let transfers = self.call_value().all_esdt_transfers();
+    #[payable("*")]
+    #[endpoint(execute)]
+    fn execute_endpoint(&self, actions: MultiValueManagedVec<dao::Action<Self::Api>>) {
+        self.require_caller_is_dao();
+        let caller = self.blockchain().get_caller();
+        let value = self.call_value().egld_value().clone_value();
+        let transfers = self.call_value().all_esdt_transfers().clone_value();
 
-    //     let mut call = self.send().contract_call::<()>(destination, endpoint);
-
-    //     call.push_raw_argument()
-
-    //     if egld_value > 0 {
-    //         call.with_egld_transfer(egld_value).transfer_execute();
-    //     }
-
-    //     call.with_multi_token_transfer(transfers.clone_value()).transfer_execute();
-    // }
+        self.forward_execution(caller, actions, value, transfers);
+    }
 
     #[payable("*")]
     #[endpoint(grantAccess)]

@@ -17,6 +17,16 @@ pub enum PolicyMethod {
     Majority,
 }
 
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, ManagedVecItem, Clone)]
+pub struct Action<M: ManagedTypeApi> {
+    pub destination: ManagedAddress<M>,
+    pub endpoint: ManagedBuffer<M>,
+    pub value: BigUint<M>,
+    pub payments: ManagedVec<M, EsdtTokenPayment<M>>,
+    pub arguments: ManagedVec<M, ManagedBuffer<M>>,
+    pub gas_limit: u64,
+}
+
 #[multiversx_sc::module]
 pub trait DaoModule: config::ConfigModule + stake::StakeModule {
     #[endpoint(initDaoModule)]
@@ -142,7 +152,7 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
 
     fn execute_unilateral_action(&self, dao: ManagedAddress, endpoint: ManagedBuffer, args: ManagedVec<ManagedBuffer>, gas_limit: u64) {
         let mut actions = MultiValueManagedVec::new();
-        actions.push(dao_proxy::Action {
+        actions.push(Action {
             destination: dao.clone(),
             endpoint,
             value: BigUint::zero(),
@@ -152,6 +162,27 @@ pub trait DaoModule: config::ConfigModule + stake::StakeModule {
         });
 
         self.dao_contract(dao).direct_execute_endpoint(actions).execute_on_dest_context::<()>();
+    }
+
+    fn forward_execution(
+        &self,
+        dao: ManagedAddress,
+        actions: MultiValueManagedVec<Action<Self::Api>>,
+        value: BigUint,
+        transfers: ManagedVec<EsdtTokenPayment<Self::Api>>,
+    ) {
+        if value > 0 {
+            self.dao_contract(dao)
+                .direct_execute_endpoint(actions)
+                .with_egld_transfer(value)
+                .execute_on_dest_context::<()>();
+            return;
+        }
+
+        self.dao_contract(dao)
+            .direct_execute_endpoint(actions)
+            .with_multi_token_transfer(transfers)
+            .execute_on_dest_context::<()>();
     }
 
     fn require_caller_is_dao(&self) {
@@ -187,19 +218,9 @@ mod dao_proxy {
     multiversx_sc::imports!();
     multiversx_sc::derive_imports!();
 
-    #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, ManagedVecItem, Clone)]
-    pub struct Action<M: ManagedTypeApi> {
-        pub destination: ManagedAddress<M>,
-        pub endpoint: ManagedBuffer<M>,
-        pub value: BigUint<M>,
-        pub payments: ManagedVec<M, EsdtTokenPayment<M>>,
-        pub arguments: ManagedVec<M, ManagedBuffer<M>>,
-        pub gas_limit: u64,
-    }
-
     #[multiversx_sc::proxy]
     pub trait DaoContractProxy {
         #[endpoint(directExecute)]
-        fn direct_execute_endpoint(&self, actions: MultiValueManagedVec<Action<Self::Api>>);
+        fn direct_execute_endpoint(&self, actions: MultiValueManagedVec<super::Action<Self::Api>>);
     }
 }
