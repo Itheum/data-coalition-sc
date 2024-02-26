@@ -1,6 +1,6 @@
 # Itheum Data Coalition
 
-The Itheum Data Coalition smart contract facilitates the business-relevant processes of Data Coalition DAOs on the [Itheum](https://itheum.io) protocol, ensuring compatibility with the [PeerMe](https://peerme.io) DAO platform. This contract enables internet-native entities (Cryptocompanies, communities, DAOs, etc.) to manage, delegate, and govern data efficiently and securely within the Itheum ecosystem.
+The Itheum Data Coalition smart contract facilitates the business-relevant processes of Data Coalitions on the [Itheum](https://itheum.io) protocol, ensuring compatibility with the [PeerMe](https://peerme.io) cryptocompany & DAO platform. This smart contract enables internet-native entities (cryptocompanies, communities, DAOs, etc.) to manage, delegate, and govern data efficiently and securely within the Itheum ecosystem.
 
 ## Data Providers
 
